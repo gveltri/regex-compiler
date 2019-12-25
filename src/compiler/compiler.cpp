@@ -86,6 +86,11 @@ NFA::NFA(NFA nfa_left, NFA nfa_right, OperatorType op) {
     start = new_start;
     end = new_end;
     break;
+  case OP_REPEAT:
+    right_start = nfa_left.start;
+    right_end = nfa_left.end;
+    right_end->left_ep = right_start;
+    break;
   }
   
 }
@@ -212,16 +217,22 @@ NFA compileRegex(list<char> pattern) {
       nfa_stack.pop();
       NFA first = nfa_stack.top();
       nfa_stack.pop();
-      NFA combined {first, second, OP_CONCAT};
-      nfa_stack.push(combined);
+      NFA newNFA {first, second, OP_CONCAT};
+      nfa_stack.push(newNFA);
     }
     else if (n == '|') {
       NFA second = nfa_stack.top();
       nfa_stack.pop();
       NFA first = nfa_stack.top();
       nfa_stack.pop();
-      NFA combined {first, second, OP_OR};
-      nfa_stack.push(combined);
+      NFA newNFA {first, second, OP_OR};
+      nfa_stack.push(newNFA);
+    }
+    else if (n == '*') {
+      NFA first = nfa_stack.top();
+      nfa_stack.pop();
+      NFA newNFA {first, first, OP_REPEAT};
+      nfa_stack.push(newNFA);
     }
     else {
       std::cout << "\nIGNORING " << n;

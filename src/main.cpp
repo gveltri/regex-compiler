@@ -11,11 +11,11 @@
 static const char *const HEADER = "\nregex\n\n";
 static const char *const USAGE = "Usage:\n\tregex <pattern> <file>\n\nDescription:\n\tSearches a document for a string.\n";
 
-struct Edge {
-   Node *src;
-   Node *dst;
-   char label;
- };
+struct GraphNode {
+  
+  Agnode_t* node_addr;
+  bool visited;
+};
 
 Agraph_t *NFAtoGraph(NFA input) {
 
@@ -170,11 +170,11 @@ int main(int argc, const char *argv[]) {
   std::cout << n;
  }
 
- std::cout << "\n\n";
-
  std::cout << "\n\nTEST COMPILER :: \n\n";
 
  NFA compiled_pattern = compileRegex(input);
+
+ std::cout << "\n\nRENDER GRAPH :: \n\n";
 
  Agraph_t *graph = NFAtoGraph(compiled_pattern);
  renderGraph(graph);
