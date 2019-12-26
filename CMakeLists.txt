@@ -12,9 +12,11 @@ set(REGEX_INSTALL_BIN_DIR ${PROJECT_SOURCE_DIR}/bin)
 set(REGEX_INSTALL_LIB_DIR ${PROJECT_SOURCE_DIR}/lib)
 
 set(COMPILER_HEADERS_DIR ${PROJECT_SOURCE_DIR}/src/compiler)
+set(VISUALIZER_HEADERS_DIR ${PROJECT_SOURCE_DIR}/src/visualizer)
 
 include_directories(${REGEX_INSTALL_INCLUDE_DIR})
 include_directories(${COMPILER_HEADERS_DIR})
+include_directories(${VISUALIZER_HEADERS_DIR})
 
 include(${CMAKE_ROOT}/Modules/ExternalProject.cmake)
 include(${CMAKE_ROOT}/Modules/CheckIncludeFileCXX.cmake)

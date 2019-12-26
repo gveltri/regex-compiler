@@ -40,4 +40,4 @@ list<char> postfixNotation(string source);
 NFA compileRegex(list<char> pattern);
 bool search(NFA compiled_regex, list<char> document);
 
-#endif //CMAKE_COMPILER_H
+#endif //COMPILER_H
