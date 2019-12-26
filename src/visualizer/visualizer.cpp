@@ -5,6 +5,7 @@
 #include <queue>
 #include <string>
 #include <map>
+#include <iostream>
 
 #include "compiler.h"
 #include <gvc.h>

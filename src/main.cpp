@@ -13,57 +13,59 @@ static const char *const USAGE = "Usage:\n\tregex <pattern> <file>\n\nDescriptio
 
 int main(int argc, const char *argv[]) {
 
+  std::cout << HEADER;
 
- std::cout << HEADER;
+  // ensure the correct number of parameters are used.
+  if (argc < 3) {
+    std::cout << USAGE;
+    return 1;
+  }
 
- // ensure the correct number of parameters are used.
- if (argc < 3) {
-  std::cout << USAGE;
-  return 1;
- }
+  string regex_str(argv[1]);
 
- string regex_str(argv[1]);
+  // read in document
+  const char* file_name = argv[2];
+  std::ifstream file;
+  file.open(file_name);
 
- // read in document
- const char* file_name = argv[2];
- std::ifstream file;
- file.open(file_name);
+  char c;
+  list<char> document;
+  while (file.get(c))
+    {
+      document.push_back(c);
+    }
 
- char c;
- list<char> document;
- while (file.get(c))
- {
-  document.push_back(c);
- }
+  std::cout << "PATTERN :: \n\n";
 
- std::cout << "PATTERN :: \n\n";
+  for (char n : regex_str) {
+    std::cout << n;
+  }
 
- for (char n : regex_str) {
-  std::cout << n;
- }
+  std::cout << "\n\nDOCUMENT :: \n\n";
 
- std::cout << "\n\nDOCUMENT :: \n\n";
+  for (char n : document) {
+    std::cout << n;
+  }
 
- for (char n : document) {
-  std::cout << n;
- }
+  std::cout << "\n\nTEST POSTFIX :: \n\n";
 
- std::cout << "\n\nTEST POSTFIX :: \n\n";
+  list<char> input = postfixNotation(regex_str);
 
- list<char> input = postfixNotation(regex_str);
+  for (char n : input) {
+    std::cout << n;
+  }
 
- for (char n : input) {
-  std::cout << n;
- }
+  std::cout << "\n\nTEST COMPILER :: \n\n";
 
- std::cout << "\n\nTEST COMPILER :: \n\n";
+  NFA compiled_pattern = compileRegex(input);
 
- NFA compiled_pattern = compileRegex(input);
+  std::cout << "\n\nCONVERT NFA TO GRAPH :: \n\n";
 
- std::cout << "\n\nRENDER GRAPH :: \n\n";
+  Agraph_t *graph = NFAtoGraph(compiled_pattern);
 
- Agraph_t *graph = NFAtoGraph(compiled_pattern);
- renderGraph(graph);
+  std::cout << "\n\nRENDER GRAPH :: \n\n";
 
- return 0;
+  renderGraph(graph);
+
+  return 0;
 }

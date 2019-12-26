@@ -90,6 +90,9 @@ NFA::NFA(NFA nfa_left, NFA nfa_right, OperatorType op) {
     right_start = nfa_left.start;
     right_end = nfa_left.end;
     right_end->left_ep = right_start;
+
+    start = nfa_left.start;
+    end = nfa_left.end;
     break;
   }
   
@@ -97,7 +100,7 @@ NFA::NFA(NFA nfa_left, NFA nfa_right, OperatorType op) {
 
 int precedence(char n) {
   switch (n) {
-  case '*':
+  case '+':
     return 3;
   case '.':
     return 2;
@@ -137,7 +140,7 @@ list<char> postfixNotation(std::string source) {
 	input.push_back('.');
 	input.push_back(source[i]);
       }
-      else if (((source[i-1] == ')') | (source[i-1] == '*'))
+      else if (((source[i-1] == ')') | (source[i-1] == '+'))
 	       && !isOperator(source[i])) {
 	input.push_back('.');
 	input.push_back(source[i]);
@@ -228,7 +231,7 @@ NFA compileRegex(list<char> pattern) {
       NFA newNFA {first, second, OP_OR};
       nfa_stack.push(newNFA);
     }
-    else if (n == '*') {
+    else if (n == '+') {
       NFA first = nfa_stack.top();
       nfa_stack.pop();
       NFA newNFA {first, first, OP_REPEAT};
