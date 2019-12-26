@@ -12,7 +12,6 @@ static const char *const HEADER = "\nregex\n\n";
 static const char *const USAGE = "Usage:\n\tregex <pattern> <file>\n\nDescription:\n\tSearches a document for a string.\n";
 
 struct GraphNode {
-  
   Agnode_t* node_addr;
   bool visited;
 };
@@ -30,8 +29,8 @@ Agraph_t *NFAtoGraph(NFA input) {
  queue<Node*> to_visit;
  to_visit.push(start);
  
- map<Node*, Agnode_t*> nodes;
- map<Node*, Agnode_t*>::iterator iter;
+ map<Node*, GraphNode> nodes;
+ map<Node*, GraphNode>::iterator iter;
  Agnode_t *registered;
  Agnode_t *next;
  char state = 'A';
@@ -46,10 +45,10 @@ Agraph_t *NFAtoGraph(NFA input) {
      node_name = (char*)malloc(sizeof(char)*1);
      node_name[0] = state++;
      registered = agnode(g, node_name, true);
-     nodes[curr] = registered;
+     nodes[curr] = {registered, true};
    }
    else {
-     registered = nodes[curr];
+     registered = nodes[curr].node_addr;
    }
 
    if (curr->next_node != nullptr) {
@@ -58,15 +57,18 @@ Agraph_t *NFAtoGraph(NFA input) {
        node_name = (char*)malloc(sizeof(char)*1);
        node_name[0] = state++;
        next = agnode(g, node_name, 1);
-       nodes[curr->next_node] = next;
+       nodes[curr->next_node] = {next, false};
      }
      else {
-       next = nodes[curr->next_node];
+       next = nodes[curr->next_node].node_addr;
      }
      e = agedge(g, registered, next, 0, 1);
      agset(e, "label", "char");
 
-     to_visit.push(curr->next_node);
+     if (!nodes[curr->next_node].visited) {
+       to_visit.push(curr->next_node);
+       nodes[curr->next_node].visited = true;
+     }
    }
 
    if (curr->left_ep != nullptr) {
@@ -75,15 +77,18 @@ Agraph_t *NFAtoGraph(NFA input) {
        node_name = (char*)malloc(sizeof(char)*1);
        node_name[0] = state++;
        next = agnode(g, node_name, 1);
-       nodes[curr->left_ep] = next;
+       nodes[curr->left_ep] = {next, false};
      }
      else {
-       next = nodes[curr->left_ep];
+       next = nodes[curr->left_ep].node_addr;
      }
      e = agedge(g, registered, next, 0, 1);
      agset(e, "label", "ep");
 
-     to_visit.push(curr->left_ep);
+     if (!nodes[curr->left_ep].visited) {
+       to_visit.push(curr->left_ep);
+       nodes[curr->left_ep].visited = true;
+     }
    }
 
    if (curr->right_ep != nullptr) {
@@ -92,15 +97,17 @@ Agraph_t *NFAtoGraph(NFA input) {
        node_name = (char*)malloc(sizeof(char)*1);
        node_name[0] = state++;
        next = agnode(g, node_name, 1);
-       nodes[curr->right_ep] = next;
+       nodes[curr->right_ep] = {next, false};
      }
      else {
-       next = nodes[curr->right_ep];
+       next = nodes[curr->right_ep].node_addr;
      }
      e = agedge(g, registered, next, 0, 1);
      agset(e, "label", "ep");
-
-     to_visit.push(curr->right_ep);
+     if (!nodes[curr->right_ep].visited) {
+       to_visit.push(curr->right_ep);
+       nodes[curr->right_ep].visited = true;
+     }
    }
 
  }
