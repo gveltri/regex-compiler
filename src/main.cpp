@@ -30,10 +30,9 @@ int main(int argc, const char *argv[]) {
 
   char c;
   list<char> document;
-  while (file.get(c))
-    {
-      document.push_back(c);
-    }
+  while (file.get(c)) {
+    document.push_back(c);
+  }
 
   std::cout << "PATTERN :: \n\n";
 
@@ -59,13 +58,26 @@ int main(int argc, const char *argv[]) {
 
   NFA compiled_pattern = compileRegex(input);
 
+  std::cout << "success";
+
   std::cout << "\n\nCONVERT NFA TO GRAPH :: \n\n";
 
   Agraph_t *graph = NFAtoGraph(compiled_pattern);
 
+  std::cout << "success";
+
   std::cout << "\n\nRENDER GRAPH :: \n\n";
 
   renderGraph(graph);
+
+  std::cout << "success\n\n";
+
+  std::cout << "\n\nDELETE NFS :: \n\n";
+
+  compiled_pattern.deleteContents();
+  delete &compiled_pattern;
+
+  std::cout << "success\n\n";
 
   return 0;
 }

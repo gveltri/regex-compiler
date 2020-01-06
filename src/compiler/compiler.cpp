@@ -7,95 +7,97 @@
 #include <stack>
 #include <stdexcept>
 
-Node::Node(char n, bool end) {
-  this->next_char = n;
-  this->end = end;
+Node::Node(char next_char, Node *next_node, bool end) :
+  end(end) {
+
+  Edge edge {next_node, next_char, false};
+  edges.push_back(edge);
+  
 }
 
-Node::Node(char n, Node *next_node, bool end) {
-  this->next_char = n;
-  this->next_node = next_node;
-  this->end = end;
+Node::Node(bool end) : end(end) {}
+
+Node::Node(Node *left_ep, Node *right_ep) {
+
+  Edge edge1 {left_ep, '0', true};
+  edges.push_back(edge1);
+  Edge edge2 {right_ep, '0', true};
+  edges.push_back(edge2);
+
 }
 
-Node::Node(bool end) {
-  this->end = end;
-}
+void Node::addEdge(char cost, Node *next_node, bool no_cost) {
 
-Node::Node(Node *left, Node *right) {
-  this->left_ep = left;
-  this->right_ep = right;
+  Edge edge {next_node, cost, no_cost};
+  edges.push_back(edge);
 }
 
 NFA::NFA(char n) {
   Node *second = new Node(true);
   Node *first = new Node(n, second, false);
 
+  nodes.push_back(first);
+  nodes.push_back(second);
+
   start = first;
   end = second;
 }
 
-NFA::NFA(NFA nfa_left, NFA nfa_right) {
-
-  // concatenate
-  Node *left_join = nfa_left.end;
-  Node *right_join = nfa_right.start;
-  left_join->end = false;
-  left_join->left_ep = right_join;
-
-  start = nfa_left.start;
-  end = nfa_right.end;
-}
-
 NFA::NFA(NFA nfa_left, NFA nfa_right, OperatorType op) {
 
-  Node *left_join;
-  Node *right_join;
-  Node *left_end;
-  Node *right_end;
-  Node *left_start;
-  Node *right_start;
-
-  Node* new_start;
-  Node* new_end;
-
-  switch (op) {
-  case OP_CONCAT:
-    left_join = nfa_left.end;
-    right_join = nfa_right.start;
+  if (op == OP_CONCAT) {
+    Node *left_join = nfa_left.end;
+    Node *right_join = nfa_right.start;
     left_join->end = false;
-    left_join->left_ep = right_join;
+    left_join->addEdge('0', right_join, true);
 
     start = nfa_left.start;
     end = nfa_right.end;
-    break;
-  case OP_OR:
-    left_end = nfa_left.end;
-    right_end = nfa_right.end;
-    left_start = nfa_left.start;
-    right_start = nfa_right.start;
+    nodes.splice(nodes.end(), nfa_left.nodes);
+    nodes.splice(nodes.end(), nfa_right.nodes);
+  }    
+  else if (op == OP_OR) {
+    Node *left_end = nfa_left.end;
+    Node *right_end = nfa_right.end;
+    Node *left_start = nfa_left.start;
+    Node *right_start = nfa_right.start;
 
-    new_start = new Node(left_start, right_start);
-    new_end = new Node(true);
+    Node *new_start = new Node(left_start, right_start);
+    Node *new_end = new Node(true);
 
     left_end->end = false;
     right_end->end = false;
-    left_end->left_ep = new_end;
-    right_end->left_ep = new_end;
+    left_end->addEdge('0', new_end, true);
+    right_end->addEdge('0', new_end, true);
 
     start = new_start;
     end = new_end;
-    break;
-  case OP_REPEAT:
-    right_start = nfa_left.start;
-    right_end = nfa_left.end;
-    right_end->left_ep = right_start;
+    nodes.splice(nodes.end(), nfa_left.nodes);
+    nodes.splice(nodes.end(), nfa_right.nodes);
+    nodes.push_front(new_start);
+    nodes.push_back(new_end);
+
+  }
+  else if (op == OP_REPEAT) {
+    Node *right_start = nfa_left.start;
+    Node *right_end = nfa_left.end;
+    right_end->addEdge('0', right_start, true);
 
     start = nfa_left.start;
     end = nfa_left.end;
-    break;
+    nodes.splice(nodes.end(), nfa_left.nodes);
   }
   
+}
+
+void NFA::deleteContents() {
+  start = NULL;
+  end = NULL;
+
+  while (nodes.size() > 0) {
+    Node *node = nodes.front();
+    nodes.pop_front();
+  }
 }
 
 int precedence(char n) {
@@ -133,8 +135,11 @@ list<char> postfixNotation(std::string source) {
     if (i==0) {
       input.push_back(source[i]);
     }
-    if (i>0) {
-      if ((!isOperator(source[i]) ||
+    else {
+      if (false) {
+	// TODO: implement consecutive '+' checking
+      }
+      else if ((!isOperator(source[i]) ||
 	   (source[i] == '('))
 	  && !isOperator(source[i-1])) {
 	input.push_back('.');
@@ -195,7 +200,11 @@ list<char> postfixNotation(std::string source) {
   }
 
   while (!operators.empty()) {
-    output.push_back(operators.top());
+    char top = operators.top();
+    if (top == '(') {
+      throw std::invalid_argument("unmatched parentheses");
+    }
+    output.push_back(top);
     operators.pop();
   }
 
@@ -209,7 +218,6 @@ NFA compileRegex(list<char> pattern) {
   std::stack<NFA> nfa_stack;
 
   for (char n : pattern) {
-
     // concatenate
     if (!isOperator(n)) {
       NFA curr {n};

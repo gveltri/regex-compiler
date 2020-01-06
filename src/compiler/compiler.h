@@ -10,19 +10,26 @@
 
 using namespace std;
 
+class Edge;
+
 class Node {
  public:
-  Node *left_ep;
-  Node *right_ep;
-  Node *next_node;
-  char next_char;
+  list<Edge> edges;
   bool end;
 
-  Node(char n, bool end);
-  Node(char n, Node *next_node, bool end);
-  Node(Node *left_node, Node *right_node);
+  Node(char next_char, Node *next_node, bool end);
+  Node(Node *left_ep, Node *right_ep);
   Node(bool end);
+  void addEdge(char next_char, Node *next_node, bool cost);
 };
+
+class Edge {
+public:
+  Node *next;
+  char cost;
+  bool no_cost;
+};
+
 
 enum OperatorType { OP_CONCAT, OP_OR, OP_REPEAT, };
 
@@ -30,10 +37,11 @@ class NFA {
  public:
   Node *start;
   Node *end;
+  list<Node*> nodes;
 
   NFA(char n);
-  NFA(NFA nfa_left, NFA nfa_right);
   NFA(NFA nfa_left, NFA nfa_right, OperatorType op);
+  void deleteContents();
 };
 
 list<char> postfixNotation(string source);
