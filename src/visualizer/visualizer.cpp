@@ -20,34 +20,33 @@ Agraph_t *NFAtoGraph(NFA input) {
   Agraph_t *g = agopen("test-graph", Agdirected, 0);
   agattr(g, AGEDGE, "label", "");
 
-  map<Node*, GraphNode> nodes;
+  map<std::shared_ptr<Node>, GraphNode> nodes;
   char state = 'a';
   char *node_name;
 
-  for (Node *curr : input.nodes) {
+  for (auto curr : input.nodes) {
     node_name = (char*)malloc(sizeof(char)*1);
     node_name[0] = state++;
     nodes[curr] = {agnode(g, node_name, true),
 		    false};
   }
-
- 
-
-  Node *start = input.start;
-  queue<Node*> to_visit;
+  
+  auto start = input.start.lock();
+  queue<std::shared_ptr<Node>> to_visit;
   to_visit.push(start);
   nodes[start].visited = true;
  
-  Node *curr;
   char *edge_name;
   while (!to_visit.empty()) {
-    curr = to_visit.front();
+    auto curr = to_visit.front();
     to_visit.pop();
 
     for (Edge e : curr->edges) {
+      auto next = e.next.lock();
+
       Agedge_t *ge = agedge(g,
 			    nodes[curr].node_addr,
-			    nodes[e.next].node_addr,
+			    nodes[next].node_addr,
 			    0, 1);
 
       if (!e.no_cost) {
@@ -56,9 +55,9 @@ Agraph_t *NFAtoGraph(NFA input) {
 	agset(ge, "label", edge_name);
       }
 
-      if (!nodes[e.next].visited) {
-	to_visit.push(e.next);
-	nodes[e.next].visited = true;
+      if (!nodes[next].visited) {
+	to_visit.push(next);
+	nodes[next].visited = true;
       }
     }
   }

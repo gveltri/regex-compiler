@@ -72,12 +72,13 @@ int main(int argc, const char *argv[]) {
 
   std::cout << "success\n\n";
 
-  std::cout << "\n\nDELETE NFS :: \n\n";
+  std::cout << "\n\nCHECK REFERENCE COUNT :: \n\n";
 
-  compiled_pattern.deleteContents();
-  delete &compiled_pattern;
-
-  std::cout << "success\n\n";
+  while (!compiled_pattern.nodes.empty()) {
+    auto curr = compiled_pattern.nodes.front();
+    compiled_pattern.nodes.pop_front();
+    std::cout << curr << "\t" << curr.use_count() << "\n";
+  }
 
   return 0;
 }

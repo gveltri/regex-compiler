@@ -7,7 +7,7 @@
 #include <stack>
 #include <stdexcept>
 
-Node::Node(char next_char, Node *next_node, bool end) :
+Node::Node(char next_char, std::weak_ptr<Node> next_node, bool end) :
   end(end) {
 
   Edge edge {next_node, next_char, false};
@@ -17,7 +17,7 @@ Node::Node(char next_char, Node *next_node, bool end) :
 
 Node::Node(bool end) : end(end) {}
 
-Node::Node(Node *left_ep, Node *right_ep) {
+Node::Node(std::weak_ptr<Node> left_ep, std::weak_ptr<Node> right_ep) {
 
   Edge edge1 {left_ep, '0', true};
   edges.push_back(edge1);
@@ -26,30 +26,29 @@ Node::Node(Node *left_ep, Node *right_ep) {
 
 }
 
-void Node::addEdge(char cost, Node *next_node, bool no_cost) {
+void Node::addEdge(char cost, std::weak_ptr<Node> next_node, bool no_cost) {
 
   Edge edge {next_node, cost, no_cost};
   edges.push_back(edge);
 }
 
 NFA::NFA(char n) {
-  Node *second = new Node(true);
-  Node *first = new Node(n, second, false);
-
+  auto second = std::make_shared<Node>(true);
+  auto first = std::make_shared<Node>(n, second, false);
+  
   nodes.push_back(first);
   nodes.push_back(second);
 
-  start = first;
-  end = second;
+  start = std::weak_ptr<Node>(first);
+  end = std::weak_ptr<Node>(second);
 }
 
 NFA::NFA(NFA nfa_left, NFA nfa_right, OperatorType op) {
 
   if (op == OP_CONCAT) {
-    Node *left_join = nfa_left.end;
-    Node *right_join = nfa_right.start;
-    left_join->end = false;
-    left_join->addEdge('0', right_join, true);
+    auto left_end = nfa_left.end.lock();
+    left_end->end = false;
+    left_end->addEdge('0', nfa_right.start, true);
 
     start = nfa_left.start;
     end = nfa_right.end;
@@ -57,21 +56,18 @@ NFA::NFA(NFA nfa_left, NFA nfa_right, OperatorType op) {
     nodes.splice(nodes.end(), nfa_right.nodes);
   }    
   else if (op == OP_OR) {
-    Node *left_end = nfa_left.end;
-    Node *right_end = nfa_right.end;
-    Node *left_start = nfa_left.start;
-    Node *right_start = nfa_right.start;
+    auto new_start = std::make_shared<Node>(nfa_left.start, nfa_right.start);
+    auto new_end = std::make_shared<Node>(true);
 
-    Node *new_start = new Node(left_start, right_start);
-    Node *new_end = new Node(true);
-
+    auto left_end = nfa_left.end.lock();
+    auto right_end = nfa_right.end.lock();
     left_end->end = false;
     right_end->end = false;
-    left_end->addEdge('0', new_end, true);
-    right_end->addEdge('0', new_end, true);
+    left_end->addEdge('0', std::weak_ptr<Node>(new_end), true);
+    right_end->addEdge('0', std::weak_ptr<Node>(new_end), true);
 
-    start = new_start;
-    end = new_end;
+    start = std::weak_ptr<Node>(new_start);
+    end = std::weak_ptr<Node>(new_end);
     nodes.splice(nodes.end(), nfa_left.nodes);
     nodes.splice(nodes.end(), nfa_right.nodes);
     nodes.push_front(new_start);
@@ -79,25 +75,13 @@ NFA::NFA(NFA nfa_left, NFA nfa_right, OperatorType op) {
 
   }
   else if (op == OP_REPEAT) {
-    Node *right_start = nfa_left.start;
-    Node *right_end = nfa_left.end;
-    right_end->addEdge('0', right_start, true);
+    auto left_end = nfa_left.end.lock();
+    left_end->addEdge('0', nfa_left.start, true);
 
     start = nfa_left.start;
     end = nfa_left.end;
     nodes.splice(nodes.end(), nfa_left.nodes);
-  }
-  
-}
-
-void NFA::deleteContents() {
-  start = NULL;
-  end = NULL;
-
-  while (nodes.size() > 0) {
-    Node *node = nodes.front();
-    nodes.pop_front();
-  }
+  }  
 }
 
 int precedence(char n) {

@@ -17,15 +17,15 @@ class Node {
   list<Edge> edges;
   bool end;
 
-  Node(char next_char, Node *next_node, bool end);
-  Node(Node *left_ep, Node *right_ep);
+  Node(char next_char, weak_ptr<Node> next_node, bool end);
+  Node(weak_ptr<Node> left_ep, weak_ptr<Node> right_ep);
   Node(bool end);
-  void addEdge(char next_char, Node *next_node, bool cost);
+  void addEdge(char next_char, weak_ptr<Node> next_node, bool cost);
 };
 
 class Edge {
 public:
-  Node *next;
+  weak_ptr<Node> next;
   char cost;
   bool no_cost;
 };
@@ -35,13 +35,12 @@ enum OperatorType { OP_CONCAT, OP_OR, OP_REPEAT, };
 
 class NFA {
  public:
-  Node *start;
-  Node *end;
-  list<Node*> nodes;
+  weak_ptr<Node> start;
+  weak_ptr<Node> end;
+  list<shared_ptr<Node>> nodes;
 
   NFA(char n);
   NFA(NFA nfa_left, NFA nfa_right, OperatorType op);
-  void deleteContents();
 };
 
 list<char> postfixNotation(string source);
