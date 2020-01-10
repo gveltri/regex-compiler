@@ -7,25 +7,24 @@
 
 #include <list>
 #include <string>
-
-using namespace std;
+#include <memory>
 
 class Edge;
 
 class Node {
  public:
-  list<Edge> edges;
+  std::list<Edge> edges;
   bool end;
 
-  Node(char next_char, weak_ptr<Node> next_node, bool end);
-  Node(weak_ptr<Node> left_ep, weak_ptr<Node> right_ep);
+  Node(char next_char, std::weak_ptr<Node> next_node, bool end);
+  Node(std::weak_ptr<Node> left_ep, std::weak_ptr<Node> right_ep);
   Node(bool end);
-  void addEdge(char next_char, weak_ptr<Node> next_node, bool cost);
+  void addEdge(char next_char, std::weak_ptr<Node> next_node, bool cost);
 };
 
 class Edge {
 public:
-  weak_ptr<Node> next;
+  std::weak_ptr<Node> next;
   char cost;
   bool no_cost;
 };
@@ -35,16 +34,16 @@ enum OperatorType { OP_CONCAT, OP_OR, OP_REPEAT, };
 
 class NFA {
  public:
-  weak_ptr<Node> start;
-  weak_ptr<Node> end;
-  list<shared_ptr<Node>> nodes;
+  std::weak_ptr<Node> start;
+  std::weak_ptr<Node> end;
+  std::list<std::shared_ptr<Node>> nodes;
 
   NFA(char n);
   NFA(NFA nfa_left, NFA nfa_right, OperatorType op);
 };
 
-list<char> postfixNotation(string source);
-NFA compileRegex(list<char> pattern);
-bool search(NFA compiled_regex, list<char> document);
+std::list<char> postfixNotation(std::string source);
+NFA compileRegex(std::list<char> pattern);
+bool search(NFA compiled_regex, std::list<char> document);
 
 #endif //COMPILER_H

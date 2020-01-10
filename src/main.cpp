@@ -21,7 +21,7 @@ int main(int argc, const char *argv[]) {
     return 1;
   }
 
-  string regex_str(argv[1]);
+  std::string regex_str(argv[1]);
 
   // read in document
   const char* file_name = argv[2];
@@ -29,7 +29,7 @@ int main(int argc, const char *argv[]) {
   file.open(file_name);
 
   char c;
-  list<char> document;
+  std::list<char> document;
   while (file.get(c)) {
     document.push_back(c);
   }
@@ -48,7 +48,7 @@ int main(int argc, const char *argv[]) {
 
   std::cout << "\n\nTEST POSTFIX :: \n\n";
 
-  list<char> input = postfixNotation(regex_str);
+  std::list<char> input = postfixNotation(regex_str);
 
   for (char n : input) {
     std::cout << n;

@@ -6,6 +6,7 @@
 #include <iostream>
 #include <stack>
 #include <stdexcept>
+#include <memory>
 
 Node::Node(char next_char, std::weak_ptr<Node> next_node, bool end) :
   end(end) {
@@ -108,11 +109,11 @@ bool isOperator(char n) {
     return true;
 }
 
-list<char> postfixNotation(std::string source) {
+std::list<char> postfixNotation(std::string source) {
 
-  list<char> input;
-  list<char> output;
-  stack<char> operators;
+  std::list<char> input;
+  std::list<char> output;
+  std::stack<char> operators;
 
   // insert explicit concatenate operator
   for (int i=0;i<source.size();i++) {
@@ -197,7 +198,7 @@ list<char> postfixNotation(std::string source) {
 }
 
 
-NFA compileRegex(list<char> pattern) {
+NFA compileRegex(std::list<char> pattern) {
 
   std::stack<NFA> nfa_stack;
 

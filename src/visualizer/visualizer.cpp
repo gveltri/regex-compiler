@@ -6,6 +6,7 @@
 #include <string>
 #include <map>
 #include <iostream>
+#include <memory>
 
 #include "compiler.h"
 #include <gvc.h>
@@ -20,7 +21,7 @@ Agraph_t *NFAtoGraph(NFA input) {
   Agraph_t *g = agopen("test-graph", Agdirected, 0);
   agattr(g, AGEDGE, "label", "");
 
-  map<std::shared_ptr<Node>, GraphNode> nodes;
+  std::map<std::shared_ptr<Node>, GraphNode> nodes;
   char state = 'a';
   char *node_name;
 
@@ -32,7 +33,7 @@ Agraph_t *NFAtoGraph(NFA input) {
   }
   
   auto start = input.start.lock();
-  queue<std::shared_ptr<Node>> to_visit;
+  std::queue<std::shared_ptr<Node>> to_visit;
   to_visit.push(start);
   nodes[start].visited = true;
  
